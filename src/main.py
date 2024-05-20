@@ -4,19 +4,20 @@ from db_manager import DBManager
 
 def main():
     create_database('headhunter')  # Вызов функции для создания Базы Данных
-    create_table()  # Вызов функции для создания таблицы
-    save_data_to_database()  # Сохранение данных о вакансиях в таблицу
+    create_table()  # Вызов функции для создания таблиц
+    save_data_to_database()  # Сохранение данных в таблицы
 
     with DBManager() as db:
         while True:
             print()
-            user_command = input('Выберите команду для запроса: \n'
+            user_command = input(
                                  '1 - Вывести список всех компаний и количество вакансий у каждой компании;\n'
                                  '2 - Вывести список всех вакансий;\n'
                                  '3 - Вывести среднюю зарплату по вакансиям для каждой компании;\n'
                                  '4 - Вывести список всех вакансий, у которых зарплата выше средней по всем вакансиям;\n'
                                  '5 - Вывести список всех вакансий по ключевому слову в названии названии вакансий;\n'
                                  '0 - Выход.\n'
+                                 'Введите команду для запроса: '
                                  )
 
             if user_command == '0':
@@ -32,10 +33,10 @@ def main():
             elif user_command == '2':
                 data = db.get_all_vacancies()
                 for i in data:
-                    salary = 'не указана' if i[3] == 0 and i[4] == 0 else (
-                        f'{i[4]} {i[-2]}' if i[3] == 0 else f'{i[3]} {i[-2]}')
+                    salary = 'не указана' if i[2] == 0 and i[3] == 0 else (
+                        f'{i[3]} {i[4]}' if i[2] == 0 else f'{i[2]} {i[4]}')
 
-                    print(f'Вакансия "{i[1]}", компания {i[2]},\n'
+                    print(f'Вакансия "{i[0]}", компания {i[1]},\n'
                           f'зарплата - {salary}, ссылка - {i[-1]}')
                     print()
 
@@ -56,10 +57,10 @@ def main():
                 keyword = input('Введите ключевое слово для поиска вакансий: ')
                 data = db.get_vacancies_with_keyword(keyword)
                 for i in data:
-                    salary = 'не указана' if i[3] == 0 and i[4] == 0 else (
-                        f'{i[4]} {i[-2]}' if i[3] == 0 else f'{i[3]} {i[-2]}')
+                    salary = 'не указана' if i[2] == 0 and i[3] == 0 else (
+                        f'{i[3]} {i[4]}' if i[2] == 0 else f'{i[2]} {i[4]}')
 
-                    print(f'Вакансия "{i[1]}", компания {i[2]},\n'
+                    print(f'Вакансия "{i[0]}", компания {i[1]},\n'
                           f'зарплата - {salary}, ссылка - {i[-1]}')
                     print()
 

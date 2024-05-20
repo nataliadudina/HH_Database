@@ -55,12 +55,21 @@ def create_table() -> None:
         conn.autocommit = True
 
         with conn.cursor() as cursor:
+            cursor.execute("DROP TABLE IF EXISTS employers CASCADE")
+            cursor.execute("""
+                    CREATE TABLE employers (
+                    company_id INT PRIMARY KEY,
+                    company_name VARCHAR(255) NOT NULL,
+                    url VARCHAR(255) NOT NULL
+                    )
+                    """)
+
             cursor.execute("DROP TABLE IF EXISTS hh_vacancies")
             cursor.execute("""
                 CREATE TABLE hh_vacancies (
                 vacancy_id SERIAL PRIMARY KEY,
                 vacancy_name VARCHAR(255) NOT NULL,
-                company_name VARCHAR(255) NOT NULL,
+                company_id INT REFERENCES employers(company_id),
                 min_salary INT,
                 max_salary INT,
                 salary_currency VARCHAR(20),
@@ -68,7 +77,7 @@ def create_table() -> None:
                 )
                 """)
 
-            print('Таблица hh_vacancies успешно создана.')
+            print('Таблицы успешно созданы.')
     except Exception as e:
         print(f'Ошибка: {e}')
     finally:
@@ -92,6 +101,17 @@ def save_data_to_database() -> None:
             vacancies = data.get_vacancies(company_ids)
 
             for item in vacancies:
+
+                # заполнение таблицы employers
+                cursor.execute(
+                    """
+                    INSERT INTO employers (company_id, company_name, url)
+                    VALUES (%s, %s, %s)
+                    ON CONFLICT (company_id) DO NOTHING
+                    """,
+                    (item['company_id'], item['employer'], item['company_url']))
+
+                # заполнение таблицы hh_vacancies
                 min_salary = item['min_salary'] or 0
                 max_salary = item['max_salary'] or 0
                 salary_currency = item['salary_currency'] or 'null'
@@ -99,11 +119,11 @@ def save_data_to_database() -> None:
                 cursor.execute(
                     """
                     INSERT INTO hh_vacancies (
-                    vacancy_name, company_name, min_salary, max_salary, salary_currency, url
+                    vacancy_name, company_id, min_salary, max_salary, salary_currency, url
                     )
                     VALUES (%s, %s, %s, %s, %s, %s)
                     """,
-                    (item['name'], item['employer'], min_salary, max_salary, salary_currency, item['url']))
+                    (item['name'], item['company_id'], min_salary, max_salary, salary_currency, item['url']))
 
             conn.commit()
     except Exception as e:

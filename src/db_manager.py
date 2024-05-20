@@ -51,6 +51,7 @@ class DBManager:
         query = """
              SELECT company_name, COUNT(vacancy_name)
              FROM hh_vacancies
+             JOIN employers USING (company_id)
              GROUP BY company_name
              ORDER BY company_name;
              """
@@ -64,7 +65,9 @@ class DBManager:
         """
 
         query = """
-        SELECT * FROM hh_vacancies;
+        SELECT vacancy_name, company_name,  min_salary, max_salary, salary_currency, vac.url 
+        FROM hh_vacancies AS vac
+        JOIN employers USING (company_id);
         """
 
         return self.execute_query(query)
@@ -83,6 +86,7 @@ class DBManager:
                     END
                 )) AS average_salary, salary_currency
             FROM hh_vacancies
+            JOIN employers USING (company_id)
             WHERE NOT (min_salary = 0 AND max_salary = 0)
             GROUP BY company_name, salary_currency
             ORDER BY average_salary DESC;
@@ -94,8 +98,9 @@ class DBManager:
         """Получает список всех вакансий, у которых зарплата выше средней по всем вакансиям."""
 
         query = """
-            SELECT vacancy_name, company_name, min_salary, salary_currency, url
-            FROM hh_vacancies
+            SELECT vacancy_name, company_name, min_salary, salary_currency, vac.url
+            FROM hh_vacancies AS vac
+            JOIN employers USING (company_id)
             WHERE min_salary > (SELECT ROUND(AVG(
                     CASE
                         WHEN min_salary = 0 AND max_salary = 0 THEN NULL
@@ -113,7 +118,9 @@ class DBManager:
         """Получает список всех вакансий, в названии которых содержатся переданные ключевые слова."""
 
         query = """
-            SELECT * FROM hh_vacancies
+            SELECT vacancy_name, company_name,  min_salary, max_salary, salary_currency, vac.url
+            FROM hh_vacancies AS vac
+            JOIN employers USING (company_id)
             WHERE vacancy_name iLIKE %s;
             """
 

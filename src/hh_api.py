@@ -23,7 +23,7 @@ class HeadHunterAPI(APIManager):
     def __init__(self, base_url='https://api.hh.ru/'):
         super().__init__(base_url)
 
-    def get_vacancies(self, company_ids) -> list:
+    def get_vacancies(self, company_ids: dict) -> list:
 
         all_vacancies = []  # Пустой список для хранения всей информации о вакансиях
         vacancies_data = []  # Пустой список для хранения информации о вакансиях, необходимой для внесения в базу данных
@@ -66,12 +66,14 @@ class HeadHunterAPI(APIManager):
             salary_to = None
             salary_currency = None
 
-        # Создание словаря для каждой вакансии
+        # Создание словаря с информацией о вакансиях и компаниях
         vac = {'name': vacancy['name'],
                'employer': vacancy['employer']['name'],
                'min_salary': salary_from,
                'max_salary': salary_to,
                'salary_currency': salary_currency,
-               'url': vacancy['apply_alternate_url']
+               'url': vacancy['apply_alternate_url'],
+               'company_url': vacancy['employer']['alternate_url'],
+               'company_id': vacancy['employer']['id']
                }
         return vac
